@@ -8,10 +8,13 @@ exports.getOne = (req, res, next) => {
 exports.create = (req, res, next) => {
   const { name, email, mobile } = req.body;
   const driver = { name, email, mobile };
-  Driver.create(driver, (err, data) => {
-    if (err) {
-      return res.status(400).json("Error occured");
-    }
-    return res.json("Driver created" + driver);
-  });
+  Driver.create(driver)
+    .then((result) => {
+      console.log(result);
+      return res.json(result);
+    })
+    .catch((err) => {
+      console.log("Error " + err);
+      res.status(400).status(err.msg);
+    });
 };
