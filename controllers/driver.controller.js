@@ -47,7 +47,7 @@ exports.create = [
     .isISO8601()
     .toDate()
     .withMessage("created_on must be a valid date"),
-  check("status").custom((value) => {
+  /* check("status").custom((value) => {
     const DRIVER_STATUS = ["active", "inactive", "deleted"];
     console.log(DRIVER_STATUS.indexOf(value));
     if (DRIVER_STATUS.indexOf(value.toLowerCase()) === -1) {
@@ -56,11 +56,11 @@ exports.create = [
       );
     }
     return true;
-  }),
+  }), */
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(404).json({ errors: errors.array() });
+      return res.status(400).json({ errors: errors.array() });
     }
     const {
       name,
@@ -92,14 +92,23 @@ exports.create = [
     if (city) driver.city = city;
 
     console.log("Created object " + driver);
+    // Using Callback
+    /* Driver.create(driver, (err, driver) => {
+      if (err) {
+        console.log("Error recieved from SQL");
+        return res.status(400).json({ errors: [{ msg: err }] });
+      }
+      console.log("Results received from SQL");
+      return res.json(driver);
+    }); */
+
+    //Using Promise
     Driver.create(driver)
       .then((result) => {
-        console.log(result);
-        return res.json(result);
+        res.json(result);
       })
       .catch((err) => {
-        console.log("Error " + err);
-        res.status(400).status(err.msg);
+        res.status(400).json({ errors: [{ msg: err }] });
       });
   },
 ];

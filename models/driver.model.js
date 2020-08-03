@@ -14,23 +14,27 @@ const Driver = function (driver) {
   this.created_on = driver.created_on;
 };
 
-Driver.create = (newDriver) => {
+Driver.create = (newDriver, cb) => {
+  // Using callback
+  /* db.query("INSERT INTO drivers SET ?", newDriver, (err, result) => {
+    if (err) {
+      console.log("Error in sql model " + err);
+      return cb(err.sqlMessages, null);
+    }
+    console.log("Driver created");
+    return cb(null, result);
+  }); */
+
+  //Using Promise
   return new Promise((resolve, reject) => {
     db.query("INSERT INTO drivers SET ?", newDriver, (err, result) => {
-      // Database error
       if (err) {
-        reject("Error while saving driver");
+        console.error(err);
+        return reject(err.sqlMessage);
       }
-
-      // Handle Wrong field value errors
-
-      //Record created
       resolve({
-        msg: "Driver created",
-        driver: {
-          id: result.insertId,
-          ...newDriver,
-        },
+        id: result.insertId,
+        ...newDriver,
       });
     });
   });
