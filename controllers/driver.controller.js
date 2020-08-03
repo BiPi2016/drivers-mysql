@@ -47,7 +47,7 @@ exports.create = [
     .isISO8601()
     .toDate()
     .withMessage("created_on must be a valid date"),
-  /* check("status").custom((value) => {
+  check("status").custom((value) => {
     const DRIVER_STATUS = ["active", "inactive", "deleted"];
     console.log(DRIVER_STATUS.indexOf(value));
     if (DRIVER_STATUS.indexOf(value.toLowerCase()) === -1) {
@@ -56,7 +56,7 @@ exports.create = [
       );
     }
     return true;
-  }), */
+  }),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
