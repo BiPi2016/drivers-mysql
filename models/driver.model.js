@@ -14,17 +14,7 @@ const Driver = function (driver) {
   this.created_on = driver.created_on;
 };
 
-Driver.create = (newDriver, cb) => {
-  // Using callback
-  /* db.query("INSERT INTO drivers SET ?", newDriver, (err, result) => {
-    if (err) {
-      console.log("Error in sql/driver.model " + err);
-      return cb(err.sqlMessages, null);
-    }
-    console.log("Driver created");
-    return cb(null, result);
-  }); */
-
+Driver.create = (newDriver) => {
   //Using Promise
   return new Promise((resolve, reject) => {
     db.query("INSERT INTO drivers SET ?", newDriver, (err, result) => {
@@ -40,21 +30,7 @@ Driver.create = (newDriver, cb) => {
   });
 };
 
-Driver.findByMobile = (mobile, cb) => {
-  /* db.query(
-    "SELECT * FROM drivers WHERE email_id = ?",
-    [email],
-    (err, result) => {
-      if (err) {
-        console.log(err);
-        return cb(err, null);
-      }
-
-      console.log(result);
-      console.log(email);
-      return cb(null, result);
-    }
-  ); */
+Driver.findByMobile = (mobile) => {
   return new Promise((resolve, reject) => {
     db.query(
       "SELECT * FROM drivers WHERE mobile = ?",

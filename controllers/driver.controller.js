@@ -100,24 +100,6 @@ exports.create = [
     if (city) newDriver.city = city;
 
     console.log("Created object " + newDriver);
-    // Using Callback
-    /* Driver.create(newDriver, (err, newDriver) => {
-      if (err) {
-        console.error("Error recieved from SQL");
-        return res.status(400).json({ errors: [{ msg: err }] });
-      }
-      console.log("Results received from SQL");
-      return res.json(newDriver);
-    }); */
-
-    //Using Promise
-    /*  Driver.create(newDriver)
-      .then((result) => {
-        res.status(201).json(result);
-      })
-      .catch((err) => {
-        res.status(400).json({ errors: [{ msg: err }] });
-      }); */
 
     //Using async await
     try {
