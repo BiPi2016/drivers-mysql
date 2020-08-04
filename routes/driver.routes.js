@@ -1,10 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const driverController = require("../controllers/driver.controller");
+const authJwt = require("../middleware/authJwt");
 
-router.get("/", (req, res, next) => {
-  res.send("All drivers");
-});
+router.get("/", authJwt, driverController.getDriverHome);
 
 router.get("/:id", driverController.getOne);
 

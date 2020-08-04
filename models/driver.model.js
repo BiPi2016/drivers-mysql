@@ -18,7 +18,7 @@ Driver.create = (newDriver, cb) => {
   // Using callback
   /* db.query("INSERT INTO drivers SET ?", newDriver, (err, result) => {
     if (err) {
-      console.log("Error in sql model " + err);
+      console.log("Error in sql/driver.model " + err);
       return cb(err.sqlMessages, null);
     }
     console.log("Driver created");
@@ -37,6 +37,36 @@ Driver.create = (newDriver, cb) => {
         ...newDriver,
       });
     });
+  });
+};
+
+Driver.findByMobile = (mobile, cb) => {
+  /* db.query(
+    "SELECT * FROM drivers WHERE email_id = ?",
+    [email],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return cb(err, null);
+      }
+
+      console.log(result);
+      console.log(email);
+      return cb(null, result);
+    }
+  ); */
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT * FROM drivers WHERE mobile = ?",
+      [mobile],
+      (err, result) => {
+        if (err) {
+          console.log(err);
+          return reject(err);
+        }
+        return resolve(result);
+      }
+    );
   });
 };
 

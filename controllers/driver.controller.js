@@ -1,6 +1,7 @@
 const mysql = require("../models/db");
 const Driver = require("../models/driver.model");
 const { check, validationResult } = require("express-validator");
+const { createHash } = require("../util/password");
 
 exports.getOne = (req, res, next) => {
   res.json("Sending one");
@@ -16,6 +17,11 @@ exports.create = [
     .normalizeEmail()
     .isEmail()
     .withMessage("Enter a valid email"),
+  check("mobile")
+    .isLength({ min: 10, max: 15 })
+    .withMessage("Check mobile number")
+    .trim()
+    .escape(),
   check("password")
     .isLength({ min: 6 })
     .withMessage("Password must be minimum 6 characters long")
@@ -57,7 +63,7 @@ exports.create = [
     }
     return true;
   }),
-  (req, res, next) => {
+  async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -75,7 +81,9 @@ exports.create = [
       created_on,
       status,
     } = req.body;
-    const driver = {
+
+    //Creating new driver object
+    const newDriver = {
       name,
       email_id,
       mobile,
@@ -86,29 +94,42 @@ exports.create = [
     };
 
     //Optional parameters
-    if (regno) driver.regno = regno;
-    if (address) driver.address = address;
-    if (pincode) driver.pincode = pincode;
-    if (city) driver.city = city;
+    if (regno) newDriver.regno = regno;
+    if (address) newDriver.address = address;
+    if (pincode) newDriver.pincode = pincode;
+    if (city) newDriver.city = city;
 
-    console.log("Created object " + driver);
+    console.log("Created object " + newDriver);
     // Using Callback
-    /* Driver.create(driver, (err, driver) => {
+    /* Driver.create(newDriver, (err, newDriver) => {
       if (err) {
-        console.log("Error recieved from SQL");
+        console.error("Error recieved from SQL");
         return res.status(400).json({ errors: [{ msg: err }] });
       }
       console.log("Results received from SQL");
-      return res.json(driver);
+      return res.json(newDriver);
     }); */
 
     //Using Promise
-    Driver.create(driver)
+    /*  Driver.create(newDriver)
       .then((result) => {
-        res.json(result);
+        res.status(201).json(result);
       })
       .catch((err) => {
         res.status(400).json({ errors: [{ msg: err }] });
-      });
+      }); */
+
+    //Using async await
+    try {
+      newDriver.password = await createHash(newDriver.password);
+      const driver = await Driver.create(newDriver);
+      res.status(201).json(driver);
+    } catch (err) {
+      res.status(400).json({ errors: [{ msg: err }] });
+    }
   },
 ];
+
+exports.getDriverHome = async (req, res, next) => {
+  return res.json("driver home");
+};
