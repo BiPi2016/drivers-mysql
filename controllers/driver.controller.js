@@ -1,5 +1,6 @@
 const mysql = require("../models/db");
 const Driver = require("../models/driver.model");
+const DriverRunningStatus = require("../models/driverRunningStatus.model");
 const { check, validationResult } = require("express-validator");
 const { createHash } = require("../util/password");
 
@@ -124,72 +125,10 @@ exports.getDriverHome = async (req, res, next) => {
     //Sending data for driver home
     res.json(driver);
   } catch (err) {
+    //Dont know how to handle this perticular error, as requirements for this perticular screen may vary, need to consult Prasad
     next(err);
   }
 };
-
-/* exports.postCheckIn = [
-  check("vehicleno")
-    .exists()
-    .withMessage("Check vehicles registeration number")
-    .trim()
-    .escape(),
-  check("driver_id")
-    .isNumeric()
-    .withMessage("Check drivers id")
-    .trim()
-    .escape(),
-  check("start_km")
-    .isNumeric()
-    .withMessage("Start kilometers must be a whole number")
-    .trim()
-    .escape(),
-  check("end_km")
-    .isNumeric()
-    .withMessage("End kilometers must be a whole number")
-    .trim()
-    .escape(),
-  check("checkin_date")
-    .isISO8601()
-    .toDate()
-    .withMessage("Enter a valid checkin date")
-    .trim()
-    .escape(),
-  check("start_at")
-    .exists()
-    .withMessage("Provide starting time")
-    .custom((value) => {
-      if (value < 1) {
-        return new Error("Not a vaild time");
-      }
-      return true;
-    }),
-  async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    //Create object
-    const {
-      vehicleno,
-      driver_id,
-      start_km,
-      end_km,
-      checkin_date,
-      start_at,
-    } = req.body;
-    const driverStatus = {
-      vehicleno,
-      driver_id,
-      start_km,
-      end_km,
-      checkin_date,
-      start_at,
-    };
-    res.json(driverStatus);
-  },
-]; */
 
 //Checkin the driver
 exports.postCheckIn = [
@@ -198,41 +137,39 @@ exports.postCheckIn = [
     .withMessage("Check vehicles registeration number")
     .trim()
     .escape(),
-  check("driver_id")
-    .isNumeric()
-    .withMessage("Check drivers id")
-    .trim()
-    .escape(),
   check("start_km")
     .isNumeric()
     .withMessage("Start kilometers must be a whole number")
     .trim()
     .escape(),
-  check("end_km")
-    .isNumeric()
-    .withMessage("End kilometers must be a whole number")
-    .trim()
-    .escape(),
-  check("checkin_date")
-    .isISO8601()
-    .toDate()
-    .withMessage("Enter a valid checkin date")
-    .trim()
-    .escape(),
-  check("start_at").custom((value) => {
-    const regExp = /^(2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9])$f/;
-    console.log(regExp.test("value"));
-    if (value > 5) {
-      throw new Error("Number too large");
-    }
-    return true;
-  }),
   async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    res.json("signin test");
+
+    const driverId = req.driver.id;
+
+    try {
+      //Check if already checkedin, if has checked-in, has started the day but has not ended
+      const results = await DriverRunningStatus.findCheckedIn(driverId);
+      console.log(
+        "The results of the query received in controller " +
+          JSON.stringify(results)
+      );
+      const alreadyStarted = results[0];
+      //Throw error if already checked-in
+      if (alreadyStarted) {
+        return res
+          .status(400)
+          .json({ errors: [{ msg: "Already checked in" }] });
+      }
+      //Create a new checkin time stamp
+      res.json("Checking in");
+    } catch (err) {
+      console.error("Some error while checkin in " + err);
+      next(err);
+    }
   },
 ];
 
