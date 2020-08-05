@@ -24,7 +24,6 @@ exports.postSignIn = exports.signIn = [
     }
 
     const { mobile, password: enteredPassword } = req.body;
-    console.log(mobile, enteredPassword);
 
     // Using async await
     try {
@@ -52,12 +51,12 @@ exports.postSignIn = exports.signIn = [
       }
       //Passwords match, create token
       const payload = {
-        driverId: driver.id,
+        id: driver.id,
       };
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: 3600 * 10, //10 hours
       });
-      res.setHeader("authorization", `bearer ${token}`);
+      res.setHeader("x-access-token", token);
       return res.json({
         msg: "Sign in successful",
         token: token,

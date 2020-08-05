@@ -3,10 +3,7 @@ const Driver = require("../models/driver.model");
 const { check, validationResult } = require("express-validator");
 const { createHash } = require("../util/password");
 
-exports.getOne = (req, res, next) => {
-  res.json("Sending one");
-};
-
+//Creates a new Driver, Only for admin, Will be removed from this section after testing
 exports.create = [
   check("name")
     .isLength({ min: 3 })
@@ -49,10 +46,10 @@ exports.create = [
     .withMessage("City must be minimum 3 characters long")
     .trim()
     .escape(),
-  check("created_on")
+  /* check("created_on")
     .isISO8601()
     .toDate()
-    .withMessage("created_on must be a valid date"),
+    .withMessage("created_on must be a valid date"), */
   check("status").custom((value) => {
     const DRIVER_STATUS = ["active", "inactive", "deleted"];
     console.log(DRIVER_STATUS.indexOf(value));
@@ -90,7 +87,7 @@ exports.create = [
       password,
       license,
       status,
-      created_on,
+      //created_on,
     };
 
     //Optional parameters
@@ -112,6 +109,139 @@ exports.create = [
   },
 ];
 
+//Driver Home
 exports.getDriverHome = async (req, res, next) => {
-  return res.json("driver home");
+  try {
+    const drivers = await Driver.findById(req.driver.id);
+    // console.log(drivers);
+    const driver = drivers[0];
+    if (!driver) {
+      return res
+        .status(404)
+        .json({ errors: [{ msg: "Could not find the driver" }] });
+    }
+
+    //Sending data for driver home
+    res.json(driver);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/* exports.postCheckIn = [
+  check("vehicleno")
+    .exists()
+    .withMessage("Check vehicles registeration number")
+    .trim()
+    .escape(),
+  check("driver_id")
+    .isNumeric()
+    .withMessage("Check drivers id")
+    .trim()
+    .escape(),
+  check("start_km")
+    .isNumeric()
+    .withMessage("Start kilometers must be a whole number")
+    .trim()
+    .escape(),
+  check("end_km")
+    .isNumeric()
+    .withMessage("End kilometers must be a whole number")
+    .trim()
+    .escape(),
+  check("checkin_date")
+    .isISO8601()
+    .toDate()
+    .withMessage("Enter a valid checkin date")
+    .trim()
+    .escape(),
+  check("start_at")
+    .exists()
+    .withMessage("Provide starting time")
+    .custom((value) => {
+      if (value < 1) {
+        return new Error("Not a vaild time");
+      }
+      return true;
+    }),
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    //Create object
+    const {
+      vehicleno,
+      driver_id,
+      start_km,
+      end_km,
+      checkin_date,
+      start_at,
+    } = req.body;
+    const driverStatus = {
+      vehicleno,
+      driver_id,
+      start_km,
+      end_km,
+      checkin_date,
+      start_at,
+    };
+    res.json(driverStatus);
+  },
+]; */
+
+//Checkin the driver
+exports.postCheckIn = [
+  check("vehicleno")
+    .exists()
+    .withMessage("Check vehicles registeration number")
+    .trim()
+    .escape(),
+  check("driver_id")
+    .isNumeric()
+    .withMessage("Check drivers id")
+    .trim()
+    .escape(),
+  check("start_km")
+    .isNumeric()
+    .withMessage("Start kilometers must be a whole number")
+    .trim()
+    .escape(),
+  check("end_km")
+    .isNumeric()
+    .withMessage("End kilometers must be a whole number")
+    .trim()
+    .escape(),
+  check("checkin_date")
+    .isISO8601()
+    .toDate()
+    .withMessage("Enter a valid checkin date")
+    .trim()
+    .escape(),
+  check("start_at").custom((value) => {
+    const regExp = /^(2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9])$f/;
+    console.log(regExp.test("value"));
+    if (value > 5) {
+      throw new Error("Number too large");
+    }
+    return true;
+  }),
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    res.json("signin test");
+  },
+];
+
+//Starts the day for the driver
+exports.postStartDay = (req, res, next) => {
+  res.json("I start the day here");
+};
+
+//End the day for the driver
+exports.postEndDay = (req, res, next) => {
+  res.json("I end the day here");
 };
