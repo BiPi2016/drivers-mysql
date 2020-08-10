@@ -149,25 +149,25 @@ exports.postCheckIn = [
     }
 
     const driverId = req.driver.id;
-
+    const { vehicleno, start_km } = req.body;
     try {
-      //Check if already checkedin, if has checked-in, has started the day but has not ended
-      const results = await DriverRunningStatus.findCheckedIn(driverId);
-      console.log(
-        "The results of the query received in controller " +
-          JSON.stringify(results)
-      );
-      const alreadyStarted = results[0];
-      //Throw error if already checked-in
-      if (alreadyStarted) {
+      //Check if already checked in
+      const hasCheckedIn = await DriverRunningStatus.hasCheckedIn(driverId);
+      if (hasCheckedIn.length > 0) {
         return res
           .status(400)
-          .json({ errors: [{ msg: "Already checked in" }] });
+          .json({ errors: [{ msg: "Driver has already checked in" }] });
       }
-      //Create a new checkin time stamp
-      res.json("Checking in");
+
+      //Post checkin the driver
+      const checkIn = await DriverRunningStatus.createCheckIn({
+        driver_id: driverId,
+        vehicleno,
+        start_km,
+      });
+      return res.json(checkIn);
     } catch (err) {
-      console.error("Some error while checkin in " + err);
+      console.error(err);
       next(err);
     }
   },

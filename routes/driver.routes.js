@@ -8,22 +8,22 @@ const authJwt = require("../middleware/authJwt");
 //@access Private
 router.get("/", authJwt, driverController.getDriverHome);
 
-//@route GET driver/checkin
+//@route POST driver/checkin
 //@desc Checks driver In
 //@access Private
 router.post("/checkin", authJwt, driverController.postCheckIn);
 
-//@route GET driver/startDay
+//@route POST driver/startDay
 //@desc Checks driver In
 //@access Private
 router.post("/startDay", authJwt, driverController.postStartDay);
 
-//@route GET driver/endDay
+//@route POST driver/endDay
 //@desc Checks driver In
 //@access Private
 router.post("/endDay", authJwt, driverController.postEndDay);
 
-//@route GET driver/create
+//@route POST driver/create
 //@desc Creates a new Driver, For Test Purpose
 //@access Public
 router.post("/create", driverController.create);

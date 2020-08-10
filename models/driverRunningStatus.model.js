@@ -1,4 +1,5 @@
 const db = require("./db");
+const { query } = require("express");
 
 const DriverRunningStatus = function (newStatus) {
   this.vehicleno = newStatus.vehicleno;
@@ -11,38 +12,39 @@ const DriverRunningStatus = function (newStatus) {
 };
 
 //Create a new checkin
-DriverRunningStatus.create = (driverRunningStatus) => {
+DriverRunningStatus.createCheckIn = (driverRunningStatus) => {
   return new Promise((resolve, reject) => {
+    console.log(driverRunningStatus);
     db.query(
       "INSERT INTO driver_running_status SET ?",
       driverRunningStatus,
       (err, result) => {
         if (err) {
-          console.error("Error create new driving status");
-          reject(err);
+          console.error("DB error while creating new checkIn");
+          return reject(err);
         }
         resolve({
-          id: result.insertId,
-          ...driverRunningStatus,
+          checkedIn: true,
+          status: {
+            id: result.insertId,
+            ...driverRunningStatus,
+          },
         });
       }
     );
   });
 };
 
-//@CHECKIN, searches and returns fieldset where given driver is checked in
-DriverRunningStatus.findCheckedIn = (driverId) => {
+DriverRunningStatus.hasCheckedIn = (driverId) => {
   return new Promise((resolve, reject) => {
     db.query(
-      /* "SELECT * FROM driver_running_status WHERE start_km > ? AND driver_id = ? ",
-      [10000, 33] */
-      "SELECT * FROM driver_running_status WHERE driver_id = ? AND NOT start_at = ?",
-      [34, "NULL"],
+      "SELECT * FROM driver_running_status WHERE start_at IS NULL AND driver_id = ?",
+      [driverId],
       (err, results, fields) => {
         if (err) {
-          return reject("Could not query" + err);
+          return reject("Could not check if driver can checkin" + err);
         }
-        return resolve(results);
+        resolve(results);
       }
     );
   });
