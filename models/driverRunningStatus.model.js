@@ -21,7 +21,7 @@ DriverRunningStatus.createCheckIn = (driverRunningStatus) => {
       driverRunningStatus,
       (err, result) => {
         if (err) {
-          console.error("DB error while creating new checkIn");
+          console.error(err);
           return reject(err);
         }
         resolve({
@@ -43,6 +43,7 @@ DriverRunningStatus.hasCheckedIn = (driverId) => {
       [driverId],
       (err, results, fields) => {
         if (err) {
+          console.error(err);
           return reject(err);
         }
         resolve(results);
@@ -58,6 +59,7 @@ DriverRunningStatus.startDay = (statusId) => {
       [statusId],
       (err, result, fields) => {
         if (err) {
+          console.error(err);
           return reject(err);
         }
         resolve(result);
@@ -73,7 +75,24 @@ DriverRunningStatus.hasStartedDay = (driverId) => {
       [driverId],
       (err, result, fields) => {
         if (err) {
-          console.error("Error while querying for started session" + err);
+          console.error(err);
+          return reject(err);
+        }
+        console.log(result);
+        resolve(result);
+      }
+    );
+  });
+};
+
+DriverRunningStatus.endDay = (id, end_km) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "UPDATE driver_running_status SET end_km = ?, end_at = NOW() WHERE id = ?",
+      [end_km, id],
+      (err, result, fields) => {
+        if (err) {
+          console.error(err);
           return reject(err);
         }
         console.log(result);

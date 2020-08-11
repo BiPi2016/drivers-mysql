@@ -218,6 +218,36 @@ exports.postStartDay = async (req, res, next) => {
 };
 
 //End the day for the driver
-exports.postEndDay = (req, res, next) => {
-  res.json("I end the day here");
+exports.postEndDay = async (req, res, next) => {
+  //Check if driver has checked-in and has started working¨
+  const driverId = req.driver.id;
+  const { end_km } = req.body;
+  console.log("Driver is " + driverId);
+  const startedSessions = await DriverRunningStatus.hasStartedDay(driverId);
+  console.log("Started session " + JSON.stringify(startedSessions));
+  const startedSession = startedSessions[0];
+  if (!startedSession) {
+    return res
+      .status(400)
+      .json({ errors: [{ msg: "The driver has no active session" }] });
+  }
+  if (end_km < startedSession.start_km) {
+    return res.status(400).json({
+      errors: [
+        {
+          msg:
+            "Meter reading error. Meter reading at the end of the day can not be less than meter reading at the start of the day",
+        },
+      ],
+    });
+  }
+  //Update record
+  const sessionEnded = await DriverRunningStatus.endDay(
+    startedSession.id,
+    end_km
+  );
+  res.json({
+    msg: "Day concluded",
+    workDay: sessionEnded,
+  });
 };
