@@ -1,5 +1,6 @@
 const db = require("./db");
 const { query } = require("express");
+const Driver = require("./driver.model");
 
 const DriverRunningStatus = function (newStatus) {
   this.vehicleno = newStatus.vehicleno;
@@ -42,9 +43,41 @@ DriverRunningStatus.hasCheckedIn = (driverId) => {
       [driverId],
       (err, results, fields) => {
         if (err) {
-          return reject("Could not check if driver can checkin" + err);
+          return reject(err);
         }
         resolve(results);
+      }
+    );
+  });
+};
+
+DriverRunningStatus.startDay = (statusId) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "UPDATE driver_running_status SET start_at = NOW() WHERE ID = ?",
+      [statusId],
+      (err, result, fields) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(result);
+      }
+    );
+  });
+};
+
+DriverRunningStatus.hasStartedDay = (driverId) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT * FROM driver_running_status WHERE driver_id = ? AND start_at IS NOT NULL AND end_at IS NULL",
+      [driverId],
+      (err, result, fields) => {
+        if (err) {
+          console.error("Error while querying for started session" + err);
+          return reject(err);
+        }
+        console.log(result);
+        resolve(result);
       }
     );
   });

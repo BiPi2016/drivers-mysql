@@ -153,6 +153,18 @@ exports.postCheckIn = [
     try {
       //Check if already checked in
       const hasCheckedIn = await DriverRunningStatus.hasCheckedIn(driverId);
+      const hasStartedDay = await DriverRunningStatus.hasStartedDay(driverId);
+      //Has already started the day
+      if (hasStartedDay.length > 0) {
+        console.log("Driver has already started the day");
+        return res.status(400).json({
+          errors: [
+            { msg: "Driver has already checked in and started the day" },
+          ],
+        });
+      }
+
+      //Has already checked in
       if (hasCheckedIn.length > 0) {
         return res
           .status(400)
@@ -174,8 +186,35 @@ exports.postCheckIn = [
 ];
 
 //Starts the day for the driver
-exports.postStartDay = (req, res, next) => {
-  res.json("I start the day here");
+exports.postStartDay = async (req, res, next) => {
+  const driverId = req.driver.id;
+  console.log(driverId);
+  try {
+    //check if checked in
+    const hasCheckedIn = await DriverRunningStatus.hasCheckedIn(driverId);
+    const hasStartedDay = await DriverRunningStatus.hasStartedDay(driverId);
+    if (hasCheckedIn.length === 0) {
+      if (hasStartedDay.length > 0) {
+        console.log("Driver has already started the day");
+        return res.status(400).json({
+          errors: [{ msg: "The driver has already started the day" }],
+        });
+      }
+      console.log("Driver is not checked in");
+      console.log(hasCheckedIn);
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "The driver has not checked in" }] });
+    }
+
+    //Update record, enter start_at
+    console.log(hasCheckedIn[0]);
+    const dayStarted = await DriverRunningStatus.startDay(hasCheckedIn[0].id);
+    res.json({ dayStarted });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
 };
 
 //End the day for the driver
