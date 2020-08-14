@@ -14,14 +14,19 @@ router.get("/", authJwt, driverController.getDriverHome);
 router.post("/checkin", authJwt, driverController.postCheckIn);
 
 //@route POST driver/startDay
-//@desc Checks driver In
+//@desc Starts the day for current driver
 //@access Private
 router.post("/startDay", authJwt, driverController.postStartDay);
 
 //@route POST driver/endDay
-//@desc Checks driver In
+//@desc Ends the day loggedin driver
 //@access Private
 router.post("/endDay", authJwt, driverController.postEndDay);
+
+//@route GET driver/hoursPerDay
+//@desc Gets hours per day for current driver
+//@access Private
+router.get("/hoursPerDay", authJwt, driverController.hoursPerDay);
 
 //@route POST driver/create
 //@desc Creates a new Driver, For Test Purpose

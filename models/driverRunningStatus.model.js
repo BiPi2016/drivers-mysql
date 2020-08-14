@@ -102,4 +102,24 @@ DriverRunningStatus.endDay = (id, end_km) => {
   });
 };
 
+DriverRunningStatus.hoursPerDay = (driverId, theDay) => {
+  return new Promise((resolve, reject) => {
+    //Convert single digit monthes to double digit
+    console.log("Received day was in model as " + theDay);
+
+    db.query(
+      "SELECT driver_id,  TIMEDIFF(end_at, start_at) AS 'Hours For Day', DATE_FORMAT(checkin_date, '%Y-%m-%d') as' Date' FROM driver_running_status WHERE driver_id = ? AND DATE_FORMAT(checkin_date, '%Y-%m-%d') = ?;",
+      [driverId, theDay],
+      (err, result, field) => {
+        if (err) {
+          console.error(err);
+          return reject(err);
+        }
+        console.log(result);
+        resolve(result);
+      }
+    );
+  });
+};
+
 module.exports = DriverRunningStatus;

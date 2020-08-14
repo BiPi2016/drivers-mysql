@@ -3,6 +3,7 @@ const Driver = require("../models/driver.model");
 const DriverRunningStatus = require("../models/driverRunningStatus.model");
 const { check, validationResult } = require("express-validator");
 const { createHash } = require("../util/password");
+const moment = require("moment");
 
 //Creates a new Driver, Only for admin, Will be removed from this section after testing
 exports.create = [
@@ -251,3 +252,52 @@ exports.postEndDay = async (req, res, next) => {
     workDay: sessionEnded,
   });
 };
+
+//Hours Per Day
+exports.hoursPerDay = [
+  check("dayToCheckHoursFor")
+    .isISO8601()
+    .toDate()
+    .withMessage("created_on must be a valid date")
+    .custom((dayToCheckHoursFor) => {
+      const today = new Date();
+      if (dayToCheckHoursFor > today) {
+        throw new Error(
+          "Wrong date provided, you can only check the hours worked for today or an earlier date"
+        );
+      }
+      return true;
+    }),
+  async (req, res, next) => {
+    const driverId = req.driver.id;
+    const { dayToCheckHoursFor } = req.body;
+    /* let theDay = `${dayToCheckHoursFor.getFullYear()}-${
+      dayToCheckHoursFor.getMonth() + 1
+    }-${dayToCheckHoursFor.getDate()}`;
+    theDay = theDay
+      .split("-")
+      .map((entity, index) => {
+        if (index === 1) {
+          if (entity.length === 1) {
+            entity = 0 + entity;
+          }
+          return entity;
+        }
+        return entity;
+      })
+      .join("-");
+    console.log(theDay + " is formatted day"); */
+
+    // Using string
+    const theDay = dayToCheckHoursFor.toISOString();
+    console.log("the day is " + theDay);
+    try {
+      const recordSet = await DriverRunningStatus.hoursPerDay(driverId, theDay);
+      console.log(recordSet);
+      res.json(recordSet);
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  },
+];
