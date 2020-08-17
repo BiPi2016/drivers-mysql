@@ -24,9 +24,14 @@ router.post("/startDay", authJwt, driverController.postStartDay);
 router.post("/endDay", authJwt, driverController.postEndDay);
 
 //@route GET driver/hoursPerDay
-//@desc Gets hours per day for current driver
+//@desc Gets hours per day for current driver,
 //@access Private
 router.get("/hoursPerDay", authJwt, driverController.hoursPerDay);
+
+//@route POST driver/takePause
+//@desc Create an entry for in rest table for current driver
+//@access Private
+router.post("/takePause", authJwt, driverController.takePause);
 
 //@route POST driver/create
 //@desc Creates a new Driver, For Test Purpose

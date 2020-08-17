@@ -4,6 +4,7 @@ const DriverRunningStatus = require("../models/driverRunningStatus.model");
 const { check, validationResult } = require("express-validator");
 const { createHash } = require("../util/password");
 const moment = require("moment");
+const DriverRest = require("../models/driver_rest.model");
 
 //Creates a new Driver, Only for admin, Will be removed from this section after testing
 exports.create = [
@@ -211,7 +212,7 @@ exports.postStartDay = async (req, res, next) => {
     //Update record, enter start_at
     console.log(hasCheckedIn[0]);
     const dayStarted = await DriverRunningStatus.startDay(hasCheckedIn[0].id);
-    res.json({ dayStarted });
+    res.json({ dayStarted: true, updationInfo: dayStarted });
   } catch (err) {
     console.error(err);
     next(err);
@@ -271,7 +272,7 @@ exports.hoursPerDay = [
   async (req, res, next) => {
     const driverId = req.driver.id;
     const { dayToCheckHoursFor } = req.body;
-    /* let theDay = `${dayToCheckHoursFor.getFullYear()}-${
+    let theDay = `${dayToCheckHoursFor.getFullYear()}-${
       dayToCheckHoursFor.getMonth() + 1
     }-${dayToCheckHoursFor.getDate()}`;
     theDay = theDay
@@ -286,14 +287,23 @@ exports.hoursPerDay = [
         return entity;
       })
       .join("-");
-    console.log(theDay + " is formatted day"); */
+    console.log(theDay + " is formatted day");
 
     // Using string
-    const theDay = dayToCheckHoursFor.toISOString();
+    // const theDay = dayToCheckHoursFor.toISOString();
     console.log("the day is " + theDay);
     try {
       const recordSet = await DriverRunningStatus.hoursPerDay(driverId, theDay);
       console.log(recordSet);
+      if (recordSet.length <= 0) {
+        return res.status(400).json({
+          errors: [
+            {
+              msg: "No record of hours available on this date for the drivers",
+            },
+          ],
+        });
+      }
       res.json(recordSet);
     } catch (err) {
       console.error(err);
@@ -301,3 +311,33 @@ exports.hoursPerDay = [
     }
   },
 ];
+
+exports.takePause = async (req, res, next) => {
+  const driverId = req.driver.id;
+  try {
+    const isWorking = await DriverRunningStatus.hasStartedDay(driverId);
+    //Has the driver started the day and not ended it
+    if (isWorking.length === 0) {
+      return res.status(400).json({
+        errors: [{ msg: "the driver has no active session for the day" }],
+      });
+    }
+    //get the session id from driver running status
+    const sessionId = isWorking[0].id;
+    //Create an entry in rest table
+    const pauseArr = await DriverRest.createPause(sessionId);
+    //Return time when rest began
+    if (pauseArr.length === 0) {
+      return res.status(400).json({
+        errors: [{ msg: "Some error occured, cannot process the request" }],
+      });
+    }
+    res.json({
+      msg: "Driver under the pause",
+      pauseInfo: pauseArr[0],
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
