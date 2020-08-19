@@ -8,7 +8,7 @@ const DriverRest = function (newRestInfo) {
   this.resumeAt = newRestInfo.resumeAt;
 };
 
-DriverRest.createPause = (sessionId) => {
+DriverRest.createBreak = (sessionId) => {
   return new Promise((resolve, reject) => {
     db.query(
       "INSERT INTO driver_rests (session_id) VALUES (?)",

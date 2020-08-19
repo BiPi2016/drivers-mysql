@@ -327,7 +327,7 @@ exports.hoursPerDay = [
   },
 ];
 
-exports.takePause = async (req, res, next) => {
+exports.takeBreak = async (req, res, next) => {
   const driverId = req.driver.id;
   try {
     const isWorking = await DriverRunningStatus.hasStartedDay(driverId);
@@ -339,17 +339,27 @@ exports.takePause = async (req, res, next) => {
     }
     //get the session id from driver running status
     const sessionId = isWorking[0].id;
+
+    //Check if driver is already on pause
+    const ongoingRestRecordset = await DriverRest.getOngoingRest(sessionId);
+    if (ongoingRestRecordset.length > 0) {
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "Driver is already on break" }] });
+    }
+
     //Create an entry in rest table
-    const pauseArr = await DriverRest.createPause(sessionId);
+    const breakRecordSet = await DriverRest.createBreak(sessionId);
     //Return time when rest began
-    if (pauseArr.length === 0) {
+    if (breakRecordSet.length === 0) {
       return res.status(400).json({
         errors: [{ msg: "Some error occured, cannot process the request" }],
       });
     }
     res.status(201).json({
-      msg: "Driver took the rest",
-      pauseInfo: pauseArr[0],
+      onBreak: true,
+      msg: "Driver on a break",
+      breakInfo: breakRecordSet[0],
     });
   } catch (err) {
     console.error(err);

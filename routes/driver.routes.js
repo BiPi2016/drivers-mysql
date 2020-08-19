@@ -31,7 +31,7 @@ router.get("/hoursPerDay", authJwt, driverController.hoursPerDay);
 //@route POST driver/takePause
 //@desc Create an entry for in rest table for current driver
 //@access Private
-router.post("/takePause", authJwt, driverController.takePause);
+router.post("/takePause", authJwt, driverController.takeBreak);
 
 //@route PUT driver/resumeDriving
 //@desc Update driver_rests table, marks end for the break for current driver
