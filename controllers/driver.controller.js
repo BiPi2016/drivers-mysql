@@ -188,7 +188,7 @@ exports.postCheckIn = [
 ];
 
 //Starts the day for the driver
-exports.postStartDay = async (req, res, next) => {
+exports.putStartDay = async (req, res, next) => {
   const driverId = req.driver.id;
   console.log(driverId);
   try {
@@ -220,7 +220,7 @@ exports.postStartDay = async (req, res, next) => {
 };
 
 //End the day for the driver
-exports.postEndDay = async (req, res, next) => {
+exports.putEndDay = async (req, res, next) => {
   //Check if driver has checked-in and has started working¨
   const driverId = req.driver.id;
   const { end_km } = req.body;
@@ -270,7 +270,7 @@ exports.postEndDay = async (req, res, next) => {
 };
 
 //Hours Per Day
-exports.hoursPerDay = [
+exports.getHoursPerDay = [
   check("dayToCheckHoursFor")
     .isISO8601()
     .toDate()
@@ -327,7 +327,7 @@ exports.hoursPerDay = [
   },
 ];
 
-exports.takeBreak = async (req, res, next) => {
+exports.postTakeBreak = async (req, res, next) => {
   const driverId = req.driver.id;
   try {
     const isWorking = await DriverRunningStatus.hasStartedDay(driverId);
@@ -367,7 +367,7 @@ exports.takeBreak = async (req, res, next) => {
   }
 };
 
-exports.resumeDriving = async (req, res, next) => {
+exports.putResumeDriving = async (req, res, next) => {
   const driverId = req.driver.id;
   try {
     //Check if there is on going rest
