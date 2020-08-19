@@ -243,6 +243,21 @@ exports.postEndDay = async (req, res, next) => {
       ],
     });
   }
+
+  //Check if there is a break ongoing
+  const sessionId = startedSession.id;
+  const ongoingRestRecordset = await DriverRest.getOngoingRest(sessionId);
+  if (ongoingRestRecordset.length > 0) {
+    console.log("Driver has taken a break");
+    return res.status(400).json({
+      errors: [
+        {
+          msg: "Driver is on break. End the break before trying to end the day",
+        },
+      ],
+    });
+  }
+
   //Update record
   const sessionEnded = await DriverRunningStatus.endDay(
     startedSession.id,
@@ -332,9 +347,56 @@ exports.takePause = async (req, res, next) => {
         errors: [{ msg: "Some error occured, cannot process the request" }],
       });
     }
-    res.json({
-      msg: "Driver under the pause",
+    res.status(201).json({
+      msg: "Driver took the rest",
       pauseInfo: pauseArr[0],
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
+
+exports.resumeDriving = async (req, res, next) => {
+  const driverId = req.driver.id;
+  try {
+    //Check if there is on going rest
+    const isWorking = await DriverRunningStatus.hasStartedDay(driverId);
+    //Has the driver started the day and not ended it
+    if (isWorking.length === 0) {
+      return res.status(400).json({
+        errors: [{ msg: "the driver has no active session for the day" }],
+      });
+    }
+    //get the session id from driver running status
+    const sessionId = isWorking[0].id;
+    const ongoingRestRecordset = await DriverRest.getOngoingRest(sessionId);
+    if (ongoingRestRecordset.length === 0) {
+      console.error("Driver has no ongoing break");
+      return res.status(400).json({
+        errors: [
+          {
+            resumedDriving: false,
+            msg: "Ther driver does not have any ongoing break",
+          },
+        ],
+      });
+    }
+    //Resume driving
+    const resumeDrivingRecord = await DriverRest.resumeDriving(sessionId);
+    console.log("Received from model " + JSON.stringify(resumeDrivingRecord));
+    if (resumeDrivingRecord) {
+      return res
+        .status(200)
+        .json({ resumedDriving: true, result: resumeDrivingRecord });
+    }
+    return res.status(500).json({
+      errors: [
+        {
+          resumedDriving: false,
+          msg: "Some error occured while ending break",
+        },
+      ],
     });
   } catch (err) {
     console.error(err);

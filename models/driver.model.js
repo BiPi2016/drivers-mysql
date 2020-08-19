@@ -40,7 +40,7 @@ Driver.findByMobile = (mobile) => {
       [mobile],
       (err, result) => {
         if (err) {
-          console.log(err);
+          console.error(err);
           return reject(err);
         }
         return resolve(result);

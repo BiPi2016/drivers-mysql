@@ -33,6 +33,11 @@ router.get("/hoursPerDay", authJwt, driverController.hoursPerDay);
 //@access Private
 router.post("/takePause", authJwt, driverController.takePause);
 
+//@route PUT driver/resumeDriving
+//@desc Update driver_rests table, marks end for the break for current driver
+//@access Private
+router.put("/resumeDriving", authJwt, driverController.resumeDriving);
+
 //@route POST driver/create
 //@desc Creates a new Driver, For Test Purpose
 //@access Public
