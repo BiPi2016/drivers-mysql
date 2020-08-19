@@ -78,7 +78,6 @@ DriverRunningStatus.hasStartedDay = (driverId) => {
           console.error(err);
           return reject(err);
         }
-        console.log(result);
         resolve(result);
       }
     );
@@ -95,7 +94,6 @@ DriverRunningStatus.endDay = (id, end_km) => {
           console.error(err);
           return reject(err);
         }
-        console.log(result);
         resolve(result);
       }
     );
@@ -115,7 +113,6 @@ DriverRunningStatus.hoursPerDay = (driverId, theDay) => {
           console.error(err);
           return reject(err);
         }
-        console.log(result);
         resolve(result);
       }
     );
