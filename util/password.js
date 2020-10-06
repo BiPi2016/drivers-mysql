@@ -22,8 +22,8 @@ const CryptoJS = require("crypto-js");
   }
 }; */
 
-//Using crypto-js
-exports.createHash = (enteredPassword) => {
+//Using crypto-js AES
+/* exports.createHash = (enteredPassword) => {
   // Encrypt
   let ciphertext = CryptoJS.AES.encrypt(
     enteredPassword,
@@ -31,9 +31,9 @@ exports.createHash = (enteredPassword) => {
   ).toString();
   console.log("hashed password" + ciphertext);
   return ciphertext;
-};
+}; */
 
-exports.comparePasswords = async (enteredPassword, registeredPassword) => {
+/* exports.comparePasswords = async (enteredPassword, registeredPassword) => {
   console.log(enteredPassword, registeredPassword);
   const bytes = CryptoJS.AES.decrypt(
     registeredPassword,
@@ -42,4 +42,30 @@ exports.comparePasswords = async (enteredPassword, registeredPassword) => {
   const originalText = bytes.toString(CryptoJS.enc.Utf8);
   console.log(originalText);
   return enteredPassword === originalText;
+};
+ */
+//Using crypto sha1
+exports.createHash = async (enteredPassword) => {
+  console.log("entered password " + enteredPassword);
+  try {
+    let hash = CryptoJS.HmacSHA1(
+      enteredPassword,
+      process.env.CRYPTO_SECRET_KEY
+    );
+    hash = hash.toString(CryptoJS.enc.Hex);
+    return hash;
+  } catch (err) {
+    console.log("Error hashing password" + err);
+  }
+};
+
+exports.comparePasswords = async (enteredPassword, registeredPassword) => {
+  try {
+    let hash = CryptoJS.HmacSHA1(
+      enteredPassword,
+      process.env.CRYPTO_SECRET_KEY
+    );
+    hash = hash.toString(CryptoJS.enc.Hex);
+    return hash === registeredPassword;
+  } catch (err) {}
 };

@@ -99,7 +99,7 @@ exports.create = [
     if (pincode) newDriver.pincode = pincode;
     if (city) newDriver.city = city;
 
-    console.log("Created object " + newDriver);
+    console.log("Created object " + JSON.stringify(newDriver));
 
     //Using async await
     try {
